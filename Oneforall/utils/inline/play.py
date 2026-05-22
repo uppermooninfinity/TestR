@@ -1,10 +1,13 @@
 import math
-
-from pyrogram.types import InlineKeyboardButton
-
 from pyrogram.enums import ButtonStyle
+
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
 from Oneforall import app
 from Oneforall.utils.formatters import time_to_seconds
+
+from Oneforall.utils.stream.thumbnail import get_thumbnail_status
+
 
 
 def track_markup(_, videoid, user_id, channel, fplay):
@@ -21,6 +24,12 @@ def track_markup(_, videoid, user_id, channel, fplay):
         ],
         [
             InlineKeyboardButton(
+                text="🎚️ ꜰɪʟᴛᴇʀs",
+                callback_data=f"ShowFilters {videoid}|{user_id}|{channel}|{fplay}",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
                 text=_["CLOSE_BUTTON"],
                 callback_data=f"forceclose {videoid}|{user_id}",
             )
@@ -28,53 +37,88 @@ def track_markup(_, videoid, user_id, channel, fplay):
     ]
     return buttons
 
-
 def stream_markup_timer(_, vidid, chat_id, played, dur):
     played_sec = time_to_seconds(played)
     duration_sec = time_to_seconds(dur)
     percentage = (played_sec / duration_sec) * 100
     umm = math.floor(percentage)
+
     if 0 < umm <= 10:
-        bar = "❍─────────"
+        bar = "|♬—————————|"
     elif 10 < umm < 20:
-        bar = "━❍────────"
+        bar = "|—♬————————|"
     elif 20 <= umm < 30:
-        bar = "━━❍───────"
+        bar = "|——♬———————|"
     elif 30 <= umm < 40:
-        bar = "━━━❍──────"
+        bar = "|———♬——————|"
     elif 40 <= umm < 50:
-        bar = "━━━━❍─────"
+        bar = "|————♬—————|"
     elif 50 <= umm < 60:
-        bar = "━━━━━❍────"
+        bar = "|—————♬————|"
     elif 60 <= umm < 70:
-        bar = "━━━━━━❍───"
+        bar = "|——————♬———|"
     elif 70 <= umm < 80:
-        bar = "━━━━━━━❍──"
+        bar = "|———————♬——|"
     elif 80 <= umm < 95:
-        bar = "━━━━━━━━❍─"
+        bar = "|————————♬—|"
     else:
-        bar = "━━━━━━━━━❍"
+        bar = "|—————————♬|"
+
+    thumb_status = get_thumbnail_status(chat_id)
+
+    thumb_text = (
+        "🖼 ᴛʜᴜᴍʙɴᴀɪʟ : ᴏɴ"
+        if thumb_status == "on"
+        else "🖼 ᴛʜᴜᴍʙɴᴀɪʟ : ᴏғғ"
+    )
+
     buttons = [
-                [
+        [
             InlineKeyboardButton(
                 text=f"{played} {bar} {dur}",
                 callback_data="GetTimer",
                 style=ButtonStyle.PRIMARY,
-                icon_custom_emoji_id=5204046146955153467
             )
         ],
         [
-            InlineKeyboardButton(text="‣‣I", callback_data=f"ADMIN Skip|{chat_id}"),
-            InlineKeyboardButton(text="II", callback_data=f"ADMIN Pause|{chat_id}"),
-            InlineKeyboardButton(text="▷", callback_data=f"ADMIN Resume|{chat_id}"),
-            InlineKeyboardButton(text="↻", callback_data=f"ADMIN Replay|{chat_id}"),
-            InlineKeyboardButton(text="▢", callback_data=f"ADMIN Stop|{chat_id}"),
+            InlineKeyboardButton(
+                text="‣‣I",
+                callback_data=f"ADMIN Skip|{chat_id}"
+            ),
+            InlineKeyboardButton(
+                text="▷",
+                callback_data=f"ADMIN Pause|{chat_id}"
+            ),
+            InlineKeyboardButton(
+                text="💿",
+                callback_data=f"ADMIN Replay|{chat_id}"
+            ),
         ],
-        [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close")],
+        [
+            InlineKeyboardButton(
+                text="ᴀᴜᴛᴏᴘʟᴀʏ 🔁",
+                callback_data=f"AutoPlay|{chat_id}",
+                style=ButtonStyle.DANGER,
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=thumb_text,
+                callback_data=f"THUMBTOGGLE|{chat_id}",
+                style=ButtonStyle.DANGER
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=_["CLOSE_BUTTON"],
+                callback_data="close",
+                style=ButtonStyle.SUCCESS
+            )
+        ],
     ]
+        
     return buttons
-
-
+    
 def stream_markup(_, videoid, chat_id):
     buttons = [
         [
@@ -84,11 +128,275 @@ def stream_markup(_, videoid, chat_id):
             InlineKeyboardButton(text="‣‣I", callback_data=f"ADMIN Skip|{chat_id}"),
             InlineKeyboardButton(text="▢", callback_data=f"ADMIN Stop|{chat_id}"),
         ],
-        [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close")],
+        [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close", style=ButtonStyle.PRIMARY)],
     ]
     return buttons
+    
 
 
+def autoplay_mood_markup():
+    moods = [
+        ("ʜᴀᴘᴘʏ", "happy"),
+        ("sᴀᴅ", "sad"),
+        ("ᴇɴᴇʀɢᴇᴛɪᴄ", "energetic"),
+        ("ᴄʜɪʟʟ", "chill"),
+        ("ʀᴏᴄᴋ", "rock"),
+        ("ᴘᴏᴘ", "pop"),
+        ("ʜɪᴘ-ʜᴏᴘ", "hip-hop"),
+        ("ᴊᴀᴢᴢ", "jazz"),
+    ]
+
+    buttons = []
+
+    for i in range(0, len(moods), 2):
+        row = [
+            InlineKeyboardButton(
+                text=moods[i][0],
+                callback_data=f"songconfig_mood:{moods[i][1]}"
+            )
+
+
+
+
+
+
+
+
+
+        ]
+
+        if i + 1 < len(moods):
+            row.append(
+                InlineKeyboardButton(
+                    text=moods[i + 1][0],
+                    callback_data=f"songconfig_mood:{moods[i + 1][1]}"
+                )
+            )
+
+        buttons.append(row)
+
+    buttons.append(
+        [
+            InlineKeyboardButton(
+                text="❌ ᴄʟᴏsᴇ",
+                callback_data="close"
+            )
+        ]
+    )
+
+    return InlineKeyboardMarkup(buttons)
+
+
+def autoplay_language_markup():
+    """Generate language selection buttons for autoplay"""
+
+    languages = [
+        ("ᴇɴɢʟɪsʜ", "english"),
+        ("ʜɪɴᴅɪ", "hindi"),
+        ("sᴘᴀɴɪsʜ", "spanish"),
+        ("ғʀᴇɴᴄʜ", "french"),
+        ("ɢᴇʀᴍᴀɴ", "german"),
+        ("ᴊᴀᴘᴀɴᴇsᴇ", "japanese"),
+        ("ᴋᴏʀᴇᴀɴ", "korean"),
+        ("ᴘᴏʀᴛᴜɢᴜᴇsᴇ", "portuguese"),
+    ]
+
+    buttons = []
+
+    for i in range(0, len(languages), 2):
+        row = [
+            InlineKeyboardButton(
+                text=languages[i][0],
+                callback_data=f"songconfig_language:{languages[i][1]}"
+            )
+        ]
+
+        if i + 1 < len(languages):
+            row.append(
+                InlineKeyboardButton(
+                    text=languages[i + 1][0],
+                    callback_data=f"songconfig_language:{languages[i + 1][1]}"
+                )
+            )
+
+        buttons.append(row)
+
+    buttons.append(
+        [InlineKeyboardButton(text="❌ ᴄʟᴏsᴇ", callback_data="close")]
+    )
+
+    return InlineKeyboardMarkup(buttons)
+
+
+def filters_markup_page_1():
+    """Display first page of filters"""
+    filters = [
+        ("🔊 ʙᴀss ʙᴏᴏst", "bass_boost"),
+        ("📈 ᴛʀᴇʙʟᴇ ʙᴏᴏst", "treble_boost"),
+        ("🎵 ᴇᴄʜᴏ", "echo"),
+        ("🔄 ʀᴇᴠᴇʀʙ", "reverb"),
+        ("🎶 ᴄʜᴏʀᴜs", "chorus"),
+        ("📊 ᴄᴏᴍᴘʀᴇssᴏʀ", "compressor"),
+    ]
+
+    buttons = []
+    for filter_name, filter_key in filters:
+        buttons.append([
+            InlineKeyboardButton(
+                text=filter_name,
+                callback_data=f"ApplyFilter {filter_key}"
+            )
+        ])
+
+    buttons.append([
+        InlineKeyboardButton(
+            text="▷ ɴᴇxᴛ ᴘᴀɢᴇ",
+            callback_data="FiltersPage 2"
+        )
+    ])
+
+    buttons.append([
+        InlineKeyboardButton(
+            text="❌ ᴄʟᴏsᴇ",
+            callback_data="close"
+
+
+        )
+    ])
+
+    return InlineKeyboardMarkup(buttons)
+
+
+def filters_markup_page_2():
+    """Display second page of filters"""
+    filters = [
+        ("🎸 ʀᴏᴄᴋ ᴇq", "equalizer_rock"),
+        ("🎤 ᴘᴏᴘ ᴇq", "equalizer_pop"),
+        ("🎺 ᴊᴀᴢᴢ ᴇq", "equalizer_jazz"),
+        ("⚖️ ɴᴏʀᴍᴀʟɪᴢᴇʀ", "normalizer"),
+        ("🔀 sᴛᴇʀᴇᴏ ᴡɪᴅᴇɴᴇʀ", "stereo_widener"),
+        ("⬆️ ᴘɪᴛᴄʜ ᴜᴘ", "pitch_up"),
+    ]
+
+    buttons = []
+    for filter_name, filter_key in filters:
+        buttons.append([
+            InlineKeyboardButton(
+                text=filter_name,
+                callback_data=f"ApplyFilter {filter_key}"
+            )
+        ])
+
+
+
+
+    buttons.append([
+        InlineKeyboardButton(
+            text="◁ ᴘʀᴇᴠ ᴘᴀɢᴇ",
+            callback_data="FiltersPage 1"
+        ),
+        InlineKeyboardButton(
+            text="▷ ɴᴇxᴛ ᴘᴀɢᴇ",
+            callback_data="FiltersPage 3"
+        )
+    ])
+
+    buttons.append([
+        InlineKeyboardButton(
+            text="❌ ᴄʟᴏsᴇ",
+            callback_data="close"
+        )
+    ])
+
+    return InlineKeyboardMarkup(buttons)
+
+
+def filters_markup_page_3():
+    """Display third page of filters"""
+    filters = [
+        ("⬇️ ᴘɪᴛᴄʜ ᴅᴏᴡɴ", "pitch_down"),
+        ("🔆 ꜰᴀᴅᴇ ɪɴ", "fade_in"),
+        ("🔅 ꜰᴀᴅᴇ ᴏᴜᴛ", "fade_out"),
+        ("🔇 ɴᴏɪsᴇ ʀᴇᴅ.", "noise_reduction"),
+        ("💿 ᴠɪɴʏʟ", "vinyl"),
+        ("☎️ ᴛᴇʟᴇᴘʜᴏɴᴇ", "telephone"),
+    ]
+
+    buttons = []
+    for filter_name, filter_key in filters:
+        buttons.append([
+            InlineKeyboardButton(
+                text=filter_name,
+                callback_data=f"ApplyFilter {filter_key}"
+            )
+        ])
+
+    buttons.append([
+        InlineKeyboardButton(
+            text="◁ ᴘʀᴇᴠ ᴘᴀɢᴇ",
+            callback_data="FiltersPage 2"
+        ),
+        InlineKeyboardButton(
+            text="▷ ɴᴇxᴛ ᴘᴀɢᴇ",
+            callback_data="FiltersPage 4"
+        )
+    ])
+
+    buttons.append([
+        InlineKeyboardButton(
+            text="❌ ᴄʟᴏsᴇ",
+            callback_data="close"
+        )
+    ])
+
+    return InlineKeyboardMarkup(buttons)
+
+
+
+
+
+
+
+
+def filters_markup_page_4():
+    """Display fourth page of filters"""
+    filters = [
+        ("📡 ʜɪɢʜ ᴘᴀss", "high_pass"),
+        ("🔊 ʟᴏᴡ ᴘᴀss", "low_pass"),
+    ]
+
+    buttons = []
+    for filter_name, filter_key in filters:
+        buttons.append([
+            InlineKeyboardButton(
+                text=filter_name,
+                callback_data=f"ApplyFilter {filter_key}"
+            )
+        ])
+
+    buttons.append([
+        InlineKeyboardButton(
+            text="❌ ɴᴏ ꜰɪʟᴛᴇʀ",
+            callback_data="ApplyFilter no_filter"
+        ),
+    ])
+
+    buttons.append([
+        InlineKeyboardButton(
+            text="◁ ᴘʀᴇᴠ ᴘᴀɢᴇ",
+            callback_data="FiltersPage 3"
+        )
+    ])
+
+    buttons.append([
+        InlineKeyboardButton(
+            text="❌ ᴄʟᴏsᴇ",
+            callback_data="close"
+        )
+    ])
+
+    return InlineKeyboardMarkup(buttons)
+    
 def playlist_markup(_, videoid, user_id, ptype, channel, fplay):
     buttons = [
         [
@@ -103,12 +411,22 @@ def playlist_markup(_, videoid, user_id, ptype, channel, fplay):
         ],
         [
             InlineKeyboardButton(
+                text="🎚️ ꜰɪʟᴛᴇʀs",
+                callback_data=f"ShowFilters {videoid}|{user_id}|{channel}|{fplay}",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
                 text=_["CLOSE_BUTTON"],
                 callback_data=f"forceclose {videoid}|{user_id}",
             ),
         ],
     ]
     return buttons
+
+
+
+
 
 
 def livestream_markup(_, videoid, user_id, mode, channel, fplay):
@@ -126,7 +444,7 @@ def livestream_markup(_, videoid, user_id, mode, channel, fplay):
             ),
         ],
     ]
-    return buttons
+    return livestream_markup
 
 
 def slider_markup(_, videoid, user_id, query, query_type, channel, fplay):
@@ -160,14 +478,21 @@ def slider_markup(_, videoid, user_id, query, query_type, channel, fplay):
     return buttons
 
 
+
+
+
 ## Telegram Markup
+
+
+
+
 
 
 def telegram_markup(_, chat_id):
     buttons = [
         [
             InlineKeyboardButton(
-                text="Next",
+                text="ɴᴇxᴛ",
                 callback_data=f"PanelMarkup None|{chat_id}",
             ),
             InlineKeyboardButton(text=_["CLOSEMENU_BUTTON"], callback_data="close"),
@@ -176,10 +501,15 @@ def telegram_markup(_, chat_id):
     return buttons
 
 
+
 ## Queue Markup
 
 
+
+
+
 def queue_markup(_, videoid, chat_id):
+
 
     buttons = [
         [
@@ -208,6 +538,12 @@ def queue_markup(_, videoid, chat_id):
         ],
         [
             InlineKeyboardButton(
+                text="🎚️ ꜰɪʟᴛᴇʀs",
+                callback_data=f"ShowFilters None|{chat_id}",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
                 text="⛦ ᴍᴏʀᴇ ❥",
                 callback_data=f"PanelMarkup None|{chat_id}",
             ),
@@ -215,6 +551,10 @@ def queue_markup(_, videoid, chat_id):
     ]
 
     return buttons
+
+
+
+
 
 
 def stream_markup2(_, chat_id):
@@ -231,6 +571,12 @@ def stream_markup2(_, chat_id):
             InlineKeyboardButton(text="↻", callback_data=f"ADMIN Replay|{chat_id}"),
             InlineKeyboardButton(text="‣‣I", callback_data=f"ADMIN Skip|{chat_id}"),
             InlineKeyboardButton(text="▢", callback_data=f"ADMIN Stop|{chat_id}"),
+        ],
+        [
+            InlineKeyboardButton(
+                text="🎚️ ꜰɪʟᴛᴇʀs",
+                callback_data=f"ShowFilters None|{chat_id}",
+            ),
         ],
         [
             InlineKeyboardButton(text=_["CLOSEMENU_BUTTON"], callback_data="close"),
@@ -276,10 +622,20 @@ def stream_markup_timer2(_, chat_id, played, dur):
             InlineKeyboardButton(text="▢", callback_data=f"ADMIN Stop|{chat_id}"),
         ],
         [
-            InlineKeyboardButton(text=_["CLOSEMENU_BUTTON"], callback_data="close", style=ButtonStyle.DANGER, icon_custom_emoji_id=5409222721869459068),
+            InlineKeyboardButton(
+                text="🎚️ ꜰɪʟᴛᴇʀs",
+                callback_data=f"ShowFilters None|{chat_id}",
+            ),
+        ],
+        [
+            InlineKeyboardButton(text=_["CLOSEMENU_BUTTON"], callback_data="close"),
         ],
     ]
     return buttons
+
+
+
+
 
 
 def panel_markup_1(_, videoid, chat_id):
@@ -309,6 +665,12 @@ def panel_markup_1(_, videoid, chat_id):
         ],
         [
             InlineKeyboardButton(
+                text="🎚️ ꜰɪʟᴛᴇʀs",
+                callback_data=f"ShowFilters None|{chat_id}",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
                 text="❥ ʜᴏᴍᴇ ❥",
                 callback_data=f"Pages Back|2|{videoid}|{chat_id}",
             ),
@@ -319,6 +681,7 @@ def panel_markup_1(_, videoid, chat_id):
         ],
     ]
     return buttons
+
 
 
 def panel_markup_2(_, videoid, chat_id):
@@ -363,6 +726,7 @@ def panel_markup_2(_, videoid, chat_id):
     return buttons
 
 
+
 def panel_markup_5(_, videoid, chat_id):
     buttons = [
         [
@@ -396,7 +760,6 @@ def panel_markup_5(_, videoid, chat_id):
         ],
     ]
     return buttons
-
 
 def panel_markup_3(_, videoid, chat_id):
     buttons = [
