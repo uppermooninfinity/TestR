@@ -33,12 +33,10 @@ class BUTTONS(object):
         ],
         [
             InlineKeyboardButton("ᴛʜᴜᴍʙ", callback_data="mplus HELP_Thumb"),
-            InlineKeyboardButton("ᴀᴜᴛᴏᴘʟᴀʏ", callback_data="mplus HELP_Autoplay")
-        [
-            InlineKeyboardButton("⬅️", callback_data=f"settings_back_helper"),
-            InlineKeyboardButton(
-                "➡️", callback_data=f"managebot123 settings_back_helper"
-            ),
+            InlineKeyboardButton("ᴀᴜᴛᴏᴘʟᴀʏ", callback_data="mplus HELP_Autoplay"),
         ],
-        ]
+        [
+            InlineKeyboardButton("⬅️", callback_data="settings_back_helper"),
+            InlineKeyboardButton("➡️", callback_data="managebot123 settings_back_helper"),
+        ],
     ]
