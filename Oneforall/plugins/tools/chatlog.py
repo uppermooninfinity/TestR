@@ -7,15 +7,6 @@ from config import LOGGER_ID as LOG_GROUP_ID
 from Oneforall import app
 from Oneforall.utils.database import get_assistant
 
-photo = [
-    "https://te.legra.ph/file/758a5cf4598f061f25963.jpg",
-    "https://te.legra.ph/file/30a1dc870bd1a485e3567.jpg",
-    "https://te.legra.ph/file/d585beb2a6b3f553299d2.jpg",
-    "https://te.legra.ph/file/7df9e128dd261de2afd6b.jpg",
-    "https://te.legra.ph/file/f60ebb75ad6f2786efa4e.jpg",
-]
-
-
 @app.on_message(filters.new_chat_members, group=2)
 async def join_watcher(_, message):
     try:
@@ -35,15 +26,14 @@ async def join_watcher(_, message):
                     f"**📈𝐆ʀᴏᴜᴘ 𝐌ᴇᴍʙᴇʀs:** {count}\n"
                     f"**🤔𝐀ᴅᴅᴇᴅ 𝐁ʏ:** {message.from_user.mention}"
                 )
-                await app.send_photo(
+                await app.send_text(
                     LOG_GROUP_ID,
-                    photo=random.choice(photo),
-                    caption=msg,
+                    text=msg,
                     reply_markup=InlineKeyboardMarkup(
                         [
                             [
                                 InlineKeyboardButton(
-                                    f"😍𝐀ᴅᴅᴇᴅ 𝐁ʏ😍",
+                                    f"ADDED BY",
                                     url=f"tg://openmessage?user_id={message.from_user.id}",
                                 )
                             ]
