@@ -40,4 +40,5 @@ class BUTTONS(object):
                 "➡️", callback_data=f"managebot123 settings_back_helper"
             ),
         ],
+        ]
     ]
