@@ -4,9 +4,7 @@ from pyrogram.types import InlineKeyboardButton
 class BUTTONS(object):
     MBUTTON = [
         [
-            InlineKeyboardButton("CʜᴀᴛGPT", callback_data="mplus HELP_ChatGPT"),
             InlineKeyboardButton("Hɪsᴛᴏʀʏ", callback_data="mplus HELP_History"),
-            InlineKeyboardButton("Rᴇᴇʟ", callback_data="mplus HELP_Reel"),
         ],
         [
             InlineKeyboardButton("Tᴀɢ-Aʟʟ", callback_data="mplus HELP_TagAll"),
@@ -34,10 +32,12 @@ class BUTTONS(object):
             InlineKeyboardButton("ǫᴜᴏᴛʟʏ", callback_data="mplus HELP_Q"),
         ],
         [
-            InlineKeyboardButton("◁", callback_data=f"settings_back_helper"),
-            InlineKeyboardButton("↻ ʙᴀᴄᴋ ↻", callback_data=f"mbot_cb"),
+            InlineKeyboardButton("ᴛʜᴜᴍʙ", callback_data="mplus HELP_Thumb"),
+            InlineKeyboardButton("ᴀᴜᴛᴏᴘʟᴀʏ", callback_data="mplus HELP_Autoplay")
+        [
+            InlineKeyboardButton("⬅️", callback_data=f"settings_back_helper"),
             InlineKeyboardButton(
-                "▷", callback_data=f"managebot123 settings_back_helper"
+                "➡️", callback_data=f"managebot123 settings_back_helper"
             ),
         ],
     ]
