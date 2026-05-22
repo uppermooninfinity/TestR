@@ -1,50 +1,56 @@
-from pyrogram import Client, filters
+from pyrogram import Client
 from pyrogram.types import ChatPrivileges
 
 from Oneforall import app
 
+
+def build_msg(action, admin, target, title=None):
+    text = (
+        f"✨ <b>{action}</b>\n\n"
+        f"👑 <b>Admin:</b> {admin.mention}\n"
+        f"👤 <b>User:</b> {target.mention}\n"
+    )
+
+    if title:
+        text += f"🏷 <b>Title:</b> {title}\n"
+
+    text += "\n──────────────"
+    return text
+
+
 @app.on_chat_member_updated()
 async def admin_change_handler(client, message):
-    old_status = message.old_chat_member
-    new_status = message.new_chat_member
-    chat_id = message.chat.id
 
-    if old_status is None or new_status is None:
+    old = message.old_chat_member
+    new = message.new_chat_member
+
+    if not old or not new:
         return
 
-    admin_user = message.from_user  # The admin making the change
-    target_user = new_status.user  # The affected user
-    new_title = new_status.custom_title if new_status.custom_title else "No Title"
+    chat_id = message.chat.id
+    admin = message.from_user
+    target = new.user
 
-    # 🔹 Admin Promotion / Demotion
-    if old_status.status != new_status.status or old_status.privileges != new_status.privileges:
-        if isinstance(new_status.privileges, ChatPrivileges):  # Promoted
-            text = (
-                "╭─────────────────\n"
-                f"├─➩ {admin_user.mention}\n"
-                f"├──── Promoted ────\n"
-                f"├─➩ {target_user.mention}\n"
-                f"├─ Title: {new_title}\n"
-                "╰─────────────────"
-            )
-        else:  # Demoted
-            text = (
-                "╭─────────────────\n"
-                f"├─➩ {admin_user.mention}\n"
-                f"├──── Demoted ────\n"
-                f"├─➩ {target_user.mention}\n"
-                "╰─────────────────"
-            )
+    old_priv = old.privileges
+    new_priv = new.privileges
+
+    old_title = old.custom_title
+    new_title = new.custom_title
+
+    # 🔹 Promotion
+    if old_priv is None and new_priv is not None:
+        text = build_msg("Promoted", admin, target, new_title or "No Title")
         await client.send_message(chat_id, text)
-    
+        return
+
+    # 🔹 Demotion
+    if old_priv is not None and new_priv is None:
+        text = build_msg("Demoted", admin, target)
+        await client.send_message(chat_id, text)
+        return
+
     # 🔹 Title Change
-    elif old_status.custom_title != new_status.custom_title:
-        text = (
-            "╭─────────────────\n"
-            f"├─➩ {admin_user.mention}\n"
-            f"├──── Changed Title ────\n"
-            f"├─➩ {target_user.mention}\n"
-            f"├─ New Title: {new_title}\n"
-            "╰─────────────────"
-        )
+    if old_title != new_title:
+        text = build_msg("Title Changed", admin, target, new_title or "No Title")
         await client.send_message(chat_id, text)
+        return
